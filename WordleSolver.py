@@ -1,5 +1,6 @@
 from collections import defaultdict
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
@@ -8,20 +9,45 @@ from SS import SS
 
 PATH = "chromedriver.exe"
 
-def solve_word(word_list):
-    solved = False
-
+def setup_page():
     # Sets up selenium and then clicks the x button 
-    driver = webdriver.Chrome(PATH)
+    service = ChromeService(executable_path=PATH)
     chrome_options = Options()
     chrome_options.add_experimental_option("detach", True)
+    driver = webdriver.Chrome(options=chrome_options,service=service)
     url = "https://www.nytimes.com/games/wordle/index.html"
     driver.get(url)
     driver.maximize_window()
+    
+    continue_button = driver.find_element(By.CLASS_NAME, 'purr-blocker-card__button')
+    continue_button.click()
+
+    time.sleep(1)
+
+    start_button = driver.find_element(By.CLASS_NAME, 'Welcome-module_button__ZG0Zh')
+    start_button.click()
+
+    driver.execute_script("window.scrollTo(0, 400)")
+
+    exit_button = driver.find_element(By.CLASS_NAME, "Modal-module_closeIcon__TcEKb")
+    exit_button.click()
+
+    time.sleep(2)
+
+    imgs = driver.find_elements(By.TAG_NAME, 'button')
+    for img in imgs:
+        print(img.get_attribute("alt"))
+        print("--")
 
     body = driver.find_element(By.TAG_NAME, 'body')
-    body.click()
-    
+
+    time.sleep(1)
+    return body
+
+def solve_word(word_list):
+    body = setup_page()
+
+    solved = False
     possible_words = []
 
     with open(word_list, 'r') as f:
@@ -36,13 +62,14 @@ def solve_word(word_list):
     correct_positions = {}
     wrong_positions = defaultdict(set)
     
-    ss = SS(795, 856, 304, 365, 67, 68)
+    #ss = SS(788, 850, 292, 353, 70, 70) # Without ads
+    ss = SS(753, 800, 215, 260, 85, 85)
 
     while tries < 7 and not solved:
 
         # First guess always being crane 
         if tries == 1:
-            guess = "house"
+            guess = "arose"
         # Concurrent guesses will pick the word that will get rid of most other words if it is wrong 
         else:
             new_letters = {}
@@ -79,8 +106,10 @@ def solve_word(word_list):
                 else:
                     if word_picker[i] > word_picker[largest_value_index]:
                         largest_value_index = i
-
+            
+            print("Possible words on try", tries, ":", possible_words)
             guess = possible_words[largest_value_index]
+
 
         # Enters the guess then enters
         body.send_keys(guess)
@@ -89,10 +118,12 @@ def solve_word(word_list):
 
         # Takes screneshots
         ss.get_letters()
-        #ss.show_images(test_var)
+        ss.show_images(test_var)
         test_var += 1
         ss.go_down()
         time.sleep(3)
+        
+        print(ss.color_map[-1])
 
         # If it is solved
         if ss.color_map[-1] == [2, 2, 2, 2, 2]:
@@ -122,7 +153,13 @@ def solve_word(word_list):
                 #Removes all the words that have blacklisted letters in them
                 for letter in letter_blacklist:
                     if letter in word:
-                        possible_words.remove(word)
+                        if letter in correct_positions.values():
+                            for index in correct_positions:
+                                if correct_positions[index] == letter and word[index] == letter:
+                                    word = None
+                        
+                        if word != None:
+                            possible_words.remove(word)
                         broke = True
                         break
                 if broke: 
@@ -154,8 +191,16 @@ def solve_word(word_list):
                     continue
 
         tries += 1
+        if guess in possible_words:
+            possible_words.remove(guess)
 
-    time.sleep(100)
+
+    if solved: 
+        time.sleep(30)
+    else:
+        print("Remaining possible words: ", possible_words)
+
 
 if __name__ == "__main__":
+    #setup_page()
     solve_word('Five Word List.txt')

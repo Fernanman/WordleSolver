@@ -2026,7 +2026,6 @@ later
 latex
 lathe
 laths
-latin
 lauds
 laugh
 lavas
@@ -2560,7 +2559,6 @@ padre
 paean
 pagan
 paged
-pager
 pages
 pails
 pains
@@ -2590,6 +2588,7 @@ pappy
 papua
 parch
 pared
+parer
 pares
 paris
 parka
@@ -3912,7 +3911,6 @@ tunny
 turbo
 turfs
 turfy
-turin
 turks
 turns
 tusks
