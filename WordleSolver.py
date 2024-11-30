@@ -4,10 +4,11 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.action_chains import ActionChains
 import time
 from SS import SS
 
-PATH = "chromedriver.exe"
+PATH = "./chromedriver-win64/chromedriver.exe"
 
 def setup_page():
     # Sets up selenium and then clicks the x button 
@@ -19,27 +20,30 @@ def setup_page():
     driver.get(url)
     driver.maximize_window()
     
-    continue_button = driver.find_element(By.CLASS_NAME, 'purr-blocker-card__button')
-    continue_button.click()
+
+    blocker_button = driver.find_element(By.CLASS_NAME, 'purr-blocker-card__button')
+    blocker_button.click()
+
+    x_button = driver.find_element(By.CLASS_NAME, 'ModalBanner-module_iconButton__CpGN2')
+    x_button.click()
+
+    start_button = driver.find_element(By.XPATH, "//button[@class='Welcome-module_button__ZG0Zh' and text()='Play']")
+    start_button.click()
 
     time.sleep(1)
 
-    start_button = driver.find_element(By.CLASS_NAME, 'Welcome-module_button__ZG0Zh')
-    start_button.click()
+    x_button = driver.find_element(By.CLASS_NAME, 'Modal-module_closeIcon__TcEKb')
+    x_button.click()
+
+    time.sleep(1)
 
     driver.execute_script("window.scrollTo(0, 400)")
 
-    exit_button = driver.find_element(By.CLASS_NAME, "Modal-module_closeIcon__TcEKb")
-    exit_button.click()
-
     time.sleep(2)
 
-    imgs = driver.find_elements(By.TAG_NAME, 'button')
-    for img in imgs:
-        print(img.get_attribute("alt"))
-        print("--")
-
     body = driver.find_element(By.TAG_NAME, 'body')
+
+    ActionChains(driver).scroll_by_amount(0, 400).perform()
 
     time.sleep(1)
     return body
@@ -63,7 +67,7 @@ def solve_word(word_list):
     wrong_positions = defaultdict(set)
     
     #ss = SS(788, 850, 292, 353, 70, 70) # Without ads
-    ss = SS(753, 800, 215, 260, 85, 85)
+    ss = SS(775, 839, 211, 275, 71, 72)
 
     while tries < 7 and not solved:
 
@@ -118,7 +122,7 @@ def solve_word(word_list):
 
         # Takes screneshots
         ss.get_letters()
-        ss.show_images(test_var)
+        # ss.show_images(test_var)
         test_var += 1
         ss.go_down()
         time.sleep(3)
@@ -202,5 +206,5 @@ def solve_word(word_list):
 
 
 if __name__ == "__main__":
-    #setup_page()
+    # setup_page()
     solve_word('Five Word List.txt')
